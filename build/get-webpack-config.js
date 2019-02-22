@@ -419,6 +419,7 @@ function getWebpackConfig(opts /*: WebpackConfigOpts */) {
         __FUSION_ENTRY_PATH__: path.join(dir, main),
         __ENV__: env,
       },
+      extensions: fusionConfig.resolveExtensions,
     },
     resolveLoader: {
       alias: {
