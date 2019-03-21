@@ -60,7 +60,7 @@ const EXCLUDE_TRANSPILATION_PATTERNS = [
   /node_modules\/react\//,
   /node_modules\/core-js\//,
 ];
-const JS_EXT_PATTERN = /\.jsx?$/;
+const JS_EXT_PATTERN = fusionConfig.jsExtPattern || /\.jsx?$/;
 
 /*::
 import type {
@@ -416,6 +416,7 @@ function getWebpackConfig(opts /*: WebpackConfigOpts */) {
         __FUSION_ENTRY_PATH__: path.join(dir, main),
         __ENV__: env,
       },
+      extensions: fusionConfig.resolveExtensions,
     },
     resolveLoader: {
       alias: {
