@@ -1,8 +1,8 @@
 {
-  "name": "fusion-cli",
+  "name": "@mastermonar/fusion-cli",
   "version": "1.18.2-0",
   "description": "CLI",
-  "repository": "fusionjs/fusion-cli",
+  "repository": "Monar/fusion-cli",
   "bin": {
     "fusion": "bin/cli.js"
   },
