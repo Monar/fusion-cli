@@ -27,7 +27,6 @@ const LoaderContextProviderPlugin = require('./plugins/loader-context-provider-p
 const ChildCompilationPlugin = require('./plugins/child-compilation-plugin.js');
 const {
   chunkIdsLoader,
-  gqlLoader,
   fileLoader,
   babelLoader,
   i18nManifestLoader,
@@ -35,6 +34,7 @@ const {
   syncChunkIdsLoader,
   syncChunkPathsLoader,
   swLoader,
+  workerLoader,
 } = require('./loaders/index.js');
 const {
   translationsManifestContextKey,
@@ -61,7 +61,7 @@ const EXCLUDE_TRANSPILATION_PATTERNS = [
   /node_modules\/core-js\//,
 ];
 
-const JS_EXT_PATTERN = /\.jsx?$/;
+const JS_EXT_PATTERN = fusionConfig.jsExtPattern || /\.jsx?$/;
 
 /*::
 import type {
@@ -78,6 +78,7 @@ export type WebpackConfigOpts = {|
   id: $Keys<typeof COMPILATIONS>,
   dir: string,
   dev: boolean,
+  hmr: boolean,
   watch: boolean,
   preserveNames: boolean,
   state: {
@@ -97,7 +98,16 @@ export type WebpackConfigOpts = {|
 module.exports = getWebpackConfig;
 
 function getWebpackConfig(opts /*: WebpackConfigOpts */) {
-  const {id, dev, dir, watch, state, fusionConfig, legacyPkgConfig = {}} = opts;
+  const {
+    id,
+    dev,
+    dir,
+    hmr,
+    watch,
+    state,
+    fusionConfig,
+    legacyPkgConfig = {},
+  } = opts;
   const main = 'src/main.js';
 
   const jsExtPattern = fusionConfig.jsExtPattern || JS_EXT_PATTERN;
@@ -186,7 +196,6 @@ function getWebpackConfig(opts /*: WebpackConfigOpts */) {
         target: runtime === 'server' ? 'node-bundled' : 'browser-legacy',
         specOnly: false,
       });
-
   return {
     name: runtime,
     target: {server: 'node', client: 'web', sw: 'webworker'}[runtime],
@@ -197,11 +206,13 @@ function getWebpackConfig(opts /*: WebpackConfigOpts */) {
         runtime === 'server' &&
           path.join(__dirname, '../entries/server-public-path.js'),
         dev &&
+          hmr &&
           watch &&
           runtime !== 'server' &&
           `${require.resolve('webpack-hot-middleware/client')}?name=client`,
         // TODO(#46): use 'webpack/hot/signal' instead
         dev &&
+          hmr &&
           watch &&
           runtime === 'server' &&
           `${require.resolve('webpack/hot/poll')}?1000`,
@@ -287,8 +298,8 @@ function getWebpackConfig(opts /*: WebpackConfigOpts */) {
                     include: [
                       // Explictly only transpile user source code as well as fusion-cli entry files
                       path.join(dir, 'src'),
-                      /fusion-cli\/entries/,
-                      /fusion-cli\/plugins/,
+                      /fusion-cli(\/|\\)entries/,
+                      /fusion-cli(\/|\\)plugins/,
                     ],
                     ...babelOverrides,
                   },
@@ -317,8 +328,8 @@ function getWebpackConfig(opts /*: WebpackConfigOpts */) {
                     include: [
                       // Explictly only transpile user source code as well as fusion-cli entry files
                       path.join(dir, 'src'),
-                      /fusion-cli\/entries/,
-                      /fusion-cli\/plugins/,
+                      /fusion-cli(\/|\\)entries/,
+                      /fusion-cli(\/|\\)plugins/,
                     ],
                     ...babelOverrides,
                   },
@@ -347,8 +358,8 @@ function getWebpackConfig(opts /*: WebpackConfigOpts */) {
                     include: [
                       // Explictly only transpile user source code as well as fusion-cli entry files
                       path.join(dir, 'src'),
-                      /fusion-cli\/entries/,
-                      /fusion-cli\/plugins/,
+                      /fusion-cli(\/|\\)entries/,
+                      /fusion-cli(\/|\\)plugins/,
                     ],
                     ...legacyBabelOverrides,
                   },
@@ -361,6 +372,10 @@ function getWebpackConfig(opts /*: WebpackConfigOpts */) {
           test: /\.json$/,
           type: 'javascript/auto',
           loader: require.resolve('./loaders/json-loader.js'),
+        },
+        {
+          test: /\.graphql$|.gql$/,
+          loader: require.resolve('graphql-tag/loader'),
         },
         fusionConfig.assumeNoImportSideEffects && {
           sideEffects: false,
@@ -408,7 +423,6 @@ function getWebpackConfig(opts /*: WebpackConfigOpts */) {
     },
     resolveLoader: {
       alias: {
-        [gqlLoader.alias]: gqlLoader.path,
         [fileLoader.alias]: fileLoader.path,
         [chunkIdsLoader.alias]: chunkIdsLoader.path,
         [syncChunkIdsLoader.alias]: syncChunkIdsLoader.path,
@@ -416,6 +430,7 @@ function getWebpackConfig(opts /*: WebpackConfigOpts */) {
         [chunkUrlMapLoader.alias]: chunkUrlMapLoader.path,
         [i18nManifestLoader.alias]: i18nManifestLoader.path,
         [swLoader.alias]: swLoader.path,
+        [workerLoader.alias]: workerLoader.path,
       },
     },
     plugins: [
@@ -461,7 +476,7 @@ function getWebpackConfig(opts /*: WebpackConfigOpts */) {
              */
             void 0
       ),
-      dev && watch && new webpack.HotModuleReplacementPlugin(),
+      dev && hmr && watch && new webpack.HotModuleReplacementPlugin(),
       !dev && runtime === 'client' && new webpack.HashedModuleIdsPlugin(),
       runtime === 'client' &&
         // case-insensitive paths can cause problems
@@ -471,9 +486,11 @@ function getWebpackConfig(opts /*: WebpackConfigOpts */) {
           raw: true,
           entryOnly: false,
           // source-map-support is a dep of framework, so we need to resolve this path
-          banner: `require('${require.resolve(
-            'source-map-support'
-          )}').install();`,
+          banner: `require('${require
+            .resolve('source-map-support')
+            // replace windows backslashes since this is generated code (#461)
+            .split(path.sep)
+            .join('/')}').install();`,
         }),
       runtime === 'server' &&
         new webpack.BannerPlugin({

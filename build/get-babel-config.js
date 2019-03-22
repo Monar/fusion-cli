@@ -74,10 +74,7 @@ module.exports = function getBabelConfig(opts /*: BabelConfigOpts */) {
     if (fusionTransforms) {
       config.presets.push([fusionPreset, {target, assumeNoImportSideEffects}]);
     } else {
-      config.plugins.push([
-        require.resolve('./babel-plugins/babel-plugin-gql'),
-        {inline: true},
-      ]);
+      config.plugins.push(require.resolve('./babel-plugins/babel-plugin-gql'));
     }
   }
 
@@ -141,13 +138,14 @@ function fusionPreset(
 
   return {
     plugins: [
-      [require.resolve('./babel-plugins/babel-plugin-gql'), {inline: false}],
+      require.resolve('./babel-plugins/babel-plugin-gql'),
       require.resolve('./babel-plugins/babel-plugin-asseturl'),
       require.resolve('./babel-plugins/babel-plugin-pure-create-plugin'),
       require.resolve('./babel-plugins/babel-plugin-sync-chunk-ids'),
       require.resolve('./babel-plugins/babel-plugin-sw'),
       require.resolve('./babel-plugins/babel-plugin-sync-chunk-paths'),
       require.resolve('./babel-plugins/babel-plugin-chunkid'),
+      require.resolve('./babel-plugins/babel-plugin-workerurl'),
       [
         require.resolve('babel-plugin-transform-cup-globals'),
         {target: targetEnv},

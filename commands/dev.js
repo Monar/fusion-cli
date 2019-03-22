@@ -37,8 +37,9 @@ exports.run = async function(
   const compiler = new Compiler({
     env: 'development',
     dir,
+    hmr,
     forceLegacyBuild,
-    watch: hmr,
+    watch: true,
     logger,
   });
 
