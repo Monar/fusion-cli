@@ -1,10 +1,24 @@
-# fusion-cli
-
 [![Build status](https://badge.buildkite.com/849975159b112300b6a2923f8ab4e58db8d3bf35227cf39a37.svg?branch=master)](https://buildkite.com/uberopensource/fusion-cli)
+
+### Fork remarks
+This fork is a preview/concept of a solution enabling work with Typescript. Read more in the pull request [#705](https://github.com/fusionjs/fusion-cli/pull/705/). 
+
+```
+// .fusionrc.js
+
+module.exports = {
+  jsExtPattern: \[jt]sx?$\,
+  babel: {
+    presets: ["@babel/preset-typescript"],
+  }
+};
+```
+
+# @mastermonar/fusion-cli
 
 The CLI interface for Fusion.js
 
-The `fusion-cli` package is responsible for orchestrating compile-time configuration for server and browser bundles, as well as development, test and production variations. It provides a standardized Babel configuration that includes async/await support as well as stage 3+ Ecmascript features.
+The `@mastermonar/fusion-cli` package is responsible for orchestrating compile-time configuration for server and browser bundles, as well as development, test and production variations. It provides a standardized Babel configuration that includes async/await support as well as stage 3+ Ecmascript features.
 
 Due to the complexity involved in configuring many permutations of configurations, Fusion.js does not support custom `webpack.config`. This design decision allows Fusion.js to eventually move away from Webpack if faster and better bundlers become available. Additionally, it allows Fusion.js to make changes to the internal webpack configuration without the concern of breaking users customizations. If you run into a situation where you feel you need to make a webpack customization, please reach out to us on [slack](https://join.slack.com/t/fusionjs/shared_invite/enQtMzk3NjM0MTg0MTI4LWJhNzVjYjk5ZDVlYWIxZWViMjA3YzE5OTc4YWZkNzBkZmNkYmJkMDYyOGEzODEwMzRmMWExMzc1NDIzMmY2NDQ) or create an issue describing your use case.
 
@@ -13,7 +27,7 @@ The CLI is also responsible for hot module reloading in development mode, and fo
 ### Installation
 
 ```sh
-yarn add fusion-cli
+yarn add @mastermonar/fusion-cli
 ```
 
 ---
