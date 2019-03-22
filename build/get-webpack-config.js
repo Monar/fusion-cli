@@ -107,9 +107,7 @@ function getWebpackConfig(opts /*: WebpackConfigOpts */) {
     legacyPkgConfig = {},
   } = opts;
   const main = 'src/main.js';
-  const JS_EXT_PATTERN = fusionConfig.jsExtPattern || /\.jsx?$/;
-
-  const jsExtPattern = fusionConfig.jsExtPattern || JS_EXT_PATTERN;
+  const jsExtPattern = fusionConfig.jsExtPattern || /\.jsx?$/;
 
   if (!fs.existsSync(path.join(dir, main))) {
     throw new Error(`Project directory must contain a ${main} file`);
