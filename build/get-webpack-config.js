@@ -109,7 +109,6 @@ function getWebpackConfig(opts /*: WebpackConfigOpts */) {
     legacyPkgConfig = {},
   } = opts;
   const main = 'src/main.js';
-
   const jsExtPattern = fusionConfig.jsExtPattern || JS_EXT_PATTERN;
 
   if (!fs.existsSync(path.join(dir, main))) {
